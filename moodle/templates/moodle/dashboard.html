@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursos Moodle - Panel de Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1E3A8A;
+            --primary-light: #3B82F6;
+            --secondary: #EFF6FF;
+            --white: #FFFFFF;
+            --text-dark: #1F2937;
+            --text-gray: #6B7280;
+            --border: #E5E7EB;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: #F3F4F6; color: var(--text-dark); min-height: 100vh; }
+        .navbar { background-color: var(--primary); color: var(--white); padding: 1rem 2rem; display: flex; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 10; }
+        .navbar h1 { font-size: 1.25rem; font-weight: 600; letter-spacing: 0.5px; }
+        .container { max-width: 1100px; margin: 3rem auto; padding: 0 1.5rem; }
+        
+        .json-card { background: linear-gradient(to right bottom, #1E293B, #0F172A); color: white; border-radius: 12px; padding: 2rem; margin-bottom: 3rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); }
+        .json-card h2 { color: #38BDF8; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px; }
+        .json-card p { color: #94A3B8; font-size: 0.95rem; margin-bottom: 1.5rem; }
+        textarea { width: 100%; min-height: 180px; background: #020617; color: #38BDF8; border: 1px solid #334155; border-radius: 8px; padding: 1rem; font-family: monospace; font-size: 0.85rem; margin-bottom: 1rem; }
+        textarea:focus { outline: none; border-color: #38BDF8; }
+        
+        .btn-submit { background-color: #3B82F6; color: white; border: none; padding: 0.8rem 1.5rem; font-size: 1rem; font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-submit:hover { background-color: #2563EB; transform: translateY(-2px); }
+
+        .section-title { margin-bottom: 1.5rem; color: var(--primary); font-size: 1.8rem; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        
+        .card { background: white; border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: all 0.2s ease; cursor: pointer; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-color: var(--primary-light); }
+        .card h3 { color: var(--primary); font-size: 1.3rem; margin-bottom: 0.5rem; }
+        .card p { color: var(--text-gray); font-size: 0.9rem; margin-bottom: 1rem; flex-grow: 1; }
+        .badge { background: var(--secondary); color: var(--primary); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; align-self: flex-start; }
+        
+        .error-msg { background: #FEF2F2; color: #991B1B; padding: 1rem; border-radius: 6px; margin-bottom: 1rem; border-left: 4px solid #EF4444; }
+    </style>
+</head>
+<body>
+    <nav class="navbar"><h1>🎓 Moodle Automator Pro</h1></nav>
+
+    <div class="container">
+        <div class="json-card">
+            <h2>
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                Importar Esqueleto del Curso (JSON)
+            </h2>
+            <p>Pega aquí la estructura del curso para crear las semanas de golpe. No necesitas incluir rutas de archivos.</p>
+            {% if error_json %}
+            <div class="error-msg">{{ error_json }}</div>
+            {% endif %}
+            <form method="POST">
+                {% csrf_token %}
+                <textarea name="json_data" required placeholder='{
+  "curso_nombre": "DISEÑO WEB",
+  "titulo_general": "Cronograma",
+  "mensaje_avisos": "Bienvenidos",
+  "semanas": [
+    { "numero": 1, "titulo": "Intro a HTML", "texto": "Bases" },
+    { "numero": 2, "titulo": "CSS", "texto": "Estilos" }
+  ]
+}'></textarea>
+                <button type="submit" class="btn-submit">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    Importar y Crear Tarjeta
+                </button>
+            </form>
+        </div>
+
+        <h2 class="section-title">Tus Cursos</h2>
+        <div class="grid">
+            {% for t in tareas %}
+            <a href="{% url 'moodle:course_detail' t.id %}" class="card">
+                <h3>{{ t.curso_nombre }}</h3>
+                <p>{{ t.titulo_general }}</p>
+                <span class="badge">{{ t.recursos_semanas.count }} Semanas Configuradas</span>
+            </a>
+            {% empty %}
+            <div style="grid-column: 1 / -1; text-align: center; color: #6B7280; padding: 2rem;">
+                No has importado ningún curso aún. Pega un JSON arriba para empezar.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

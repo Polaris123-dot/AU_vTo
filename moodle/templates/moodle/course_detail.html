@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ tarea.curso_nombre }} - Detalles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1E3A8A;
+            --primary-light: #3B82F6;
+            --secondary: #EFF6FF;
+            --white: #FFFFFF;
+            --text-dark: #1F2937;
+            --text-gray: #6B7280;
+            --border: #E5E7EB;
+        }
+        body { font-family: 'Inter', sans-serif; background: #F8FAFC; color: var(--text-dark); margin: 0; }
+        .navbar { background: #0F172A; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .navbar a { color: #94A3B8; text-decoration: none; font-size: 0.95rem; display: flex; align-items: center; gap: 5px; transition: color 0.2s; }
+        .navbar a:hover { color: white; }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
+        
+        .header-box { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.5rem; background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+        .header-box h1 { margin: 0 0 0.5rem 0; color: var(--primary); font-size: 2.2rem; }
+        .header-box p { margin: 0; color: var(--text-gray); }
+        
+        .btn-run { background: #10B981; color: white; padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-run:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3); }
+
+        .section-title { margin-bottom: 1.5rem; color: var(--text-dark); font-size: 1.5rem; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; }
+        .card { background: white; border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden; }
+        .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--primary-light); opacity: 0; transition: opacity 0.2s; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1); border-color: #BFDBFE; }
+        .card:hover::before { opacity: 1; }
+        .card h3 { color: var(--primary); margin: 0 0 0.5rem 0; font-size: 1.2rem; display: flex; align-items: center; justify-content: space-between; }
+        .card p { color: var(--text-gray); font-size: 0.9rem; margin-bottom: 1rem; flex-grow: 1; }
+        
+        .badge-list { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem; }
+        .badge { background: var(--secondary); color: var(--primary); font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 500; border: 1px solid #DBEAFE; }
+        .badge.empty { background: #F3F4F6; color: #9CA3AF; border-color: #E5E7EB; }
+        
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
+        .modal { background: white; padding: 2.5rem; border-radius: 16px; width: 100%; max-width: 500px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; animation: modalIn 0.3s ease-out; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        .modal h2 { margin-top: 0; color: var(--primary); margin-bottom: 0.5rem; }
+        .modal p { color: var(--text-gray); font-size: 0.9rem; margin-bottom: 2rem; }
+        .modal-close { position: absolute; top: 1.5rem; right: 1.5rem; cursor: pointer; font-size: 1.5rem; color: #94A3B8; background: none; border: none; transition: color 0.2s; }
+        .modal-close:hover { color: var(--text-dark); }
+        
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; color: #334155; }
+        
+        .file-input-wrapper { position: relative; background: #F8FAFC; border: 2px dashed #CBD5E1; border-radius: 8px; padding: 1.2rem; text-align: center; transition: all 0.2s; cursor: pointer; }
+        .file-input-wrapper:hover { background: #F1F5F9; border-color: var(--primary-light); }
+        .file-input-wrapper input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .file-input-text { color: var(--primary); font-weight: 500; font-size: 0.9rem; }
+        .file-list { font-size: 0.8rem; color: var(--text-gray); margin-top: 0.5rem; text-align: left; padding-left: 1rem; }
+
+        .btn-submit { background: var(--primary-light); color: white; width: 100%; padding: 1rem; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; margin-top: 1rem; transition: background 0.2s; }
+        .btn-submit:hover { background: var(--primary); }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div style="font-weight: 600; letter-spacing: 0.5px;">🎓 Moodle Automator Pro</div>
+        <a href="{% url 'moodle:dashboard' %}">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Volver al Dashboard
+        </a>
+    </nav>
+    
+    <div class="container">
+        <div class="header-box">
+            <div>
+                <h1>{{ tarea.curso_nombre }}</h1>
+                <p>{{ tarea.titulo_general }}</p>
+            </div>
+            <a href="{% url 'moodle:run_bot' tarea.id %}" class="btn-run" onclick="alert('El bot comenzará a procesar este curso en la consola. 🚀')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Ejecutar Bot para este Curso
+            </a>
+        </div>
+
+        <h2 class="section-title">Semanas del Curso</h2>
+        <div class="grid">
+            {% for rec in recursos %}
+            <div class="card" onclick="openModal('{{ rec.id }}', 'Semana {{ rec.semana_numero }}')">
+                <h3>
+                    Semana {{ rec.semana_numero }}
+                    <svg width="20" height="20" fill="none" stroke="#9CA3AF" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                </h3>
+                <p>{{ rec.titulo|default:"Sin título" }}</p>
+                <div class="badge-list">
+                    {% if rec.archivos_carpetas.desarrollo %}
+                        <span class="badge">Desarrollo ({{ rec.archivos_carpetas.desarrollo|length }})</span>
+                    {% else %}
+                        <span class="badge empty">Desarrollo (0)</span>
+                    {% endif %}
+                    
+                    {% if rec.archivos_carpetas.analisis %}
+                        <span class="badge">Análisis ({{ rec.archivos_carpetas.analisis|length }})</span>
+                    {% else %}
+                        <span class="badge empty">Análisis (0)</span>
+                    {% endif %}
+                    
+                    {% if rec.archivos_carpetas.evaluacion %}
+                        <span class="badge">Evaluación ({{ rec.archivos_carpetas.evaluacion|length }})</span>
+                    {% else %}
+                        <span class="badge empty">Evaluación (0)</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="uploadModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <h2 id="modalTitle">Subir Archivos</h2>
+            <p>Selecciona los archivos locales para esta semana. Se organizarán automáticamente.</p>
+            
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="recurso_id" id="recurso_id_input">
+                
+                <div class="form-group">
+                    <label>📁 Desarrollo de clase</label>
+                    <div class="file-input-wrapper">
+                        <div class="file-input-text">Haz clic o arrastra archivos...</div>
+                        <input type="file" name="desarrollo" multiple onchange="updateList(this, 'list-desarrollo')">
+                    </div>
+                    <ul id="list-desarrollo" class="file-list"></ul>
+                </div>
+                
+                <div class="form-group">
+                    <label>📁 Análisis de competencia</label>
+                    <div class="file-input-wrapper">
+                        <div class="file-input-text">Haz clic o arrastra archivos...</div>
+                        <input type="file" name="analisis" multiple onchange="updateList(this, 'list-analisis')">
+                    </div>
+                    <ul id="list-analisis" class="file-list"></ul>
+                </div>
+                
+                <div class="form-group">
+                    <label>📁 Evaluación de sesión</label>
+                    <div class="file-input-wrapper">
+                        <div class="file-input-text">Haz clic o arrastra archivos...</div>
+                        <input type="file" name="evaluacion" multiple onchange="updateList(this, 'list-evaluacion')">
+                    </div>
+                    <ul id="list-evaluacion" class="file-list"></ul>
+                </div>
+                
+                <button type="submit" class="btn-submit">Guardar y Organizar Archivos</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id, title) {
+            document.getElementById('recurso_id_input').value = id;
+            document.getElementById('modalTitle').innerText = 'Archivos - ' + title;
+            document.getElementById('uploadModal').style.display = 'flex';
+        }
+        function closeModal() {
+            document.getElementById('uploadModal').style.display = 'none';
+            // Clear lists when closing
+            document.getElementById('list-desarrollo').innerHTML = '';
+            document.getElementById('list-analisis').innerHTML = '';
+            document.getElementById('list-evaluacion').innerHTML = '';
+        }
+        document.getElementById('uploadModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+        function updateList(input, listId) {
+            const list = document.getElementById(listId);
+            list.innerHTML = '';
+            for (let i = 0; i < input.files.length; i++) {
+                const li = document.createElement('li');
+                li.textContent = '📄 ' + input.files[i].name;
+                list.appendChild(li);
+            }
+        }
+    </script>
+</body>
+</html>
